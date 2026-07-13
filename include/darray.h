@@ -60,7 +60,12 @@
 		free(arr->data);													\
 	}																		\
 	void typename##_reserve(typename *arr, size_t newcapacity){				\
-		if(newcapacity > arr->capacity){									\
+		if(arr->capacity == 0 && newcapacity > 0){							\
+			arr->capacity = newcapacity;									\
+			arr->data = (type*)malloc(arr->capacity * sizeof(type));		\
+		}																	\
+																			\
+		else if(newcapacity > arr->capacity){								\
 			arr->capacity = newcapacity;									\
 			arr->data = realloc(arr->data, arr->capacity * sizeof(type));	\
 		}																	\
