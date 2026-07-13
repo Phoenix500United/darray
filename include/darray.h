@@ -107,10 +107,21 @@
 			arr1->data = realloc(arr1->data, arr1->capacity * sizeof(*(arr1->data)));\
 		}																			\
 		for(size_t i = 0; i < arr2->size; ++i){										\
-			arr1->data[arr1->size+i] = arr2->data[i];									\
+			arr1->data[arr1->size+i] = arr2->data[i];								\
 		}																			\
 		arr1->size = newsize;														\
 	}																				\
+	void typename##_##type##_array_append(typename *arr1, const type *arr2, const size_t buffer){ \
+		size_t newsize = arr1->size + buffer;											\
+		if(arr1->capacity < newsize){														\
+			arr1->capacity = arr1->size <= buffer ? (buffer ? 2*buffer : 8) : 2*arr1->size; \
+			arr1->data = realloc(arr1->data, arr1->capacity * sizeof(*(arr1->data)));		\
+		}																					\
+		for(size_t i = 0; i < buffer; ++i){													\
+			arr1->data[arr1->size+i] = arr2[i];												\
+		}																					\
+	}																						\
+																							
 
 //==================================================================================================================================
 // MULTI LEVEL FOR WHEN THE TYPE CONTAINED IN THE ARRAY CONTAINS A HEAP POINTER AND REQUIRES EXTRA FREEING TO ENSURE NO MEM LEAKS 
