@@ -17,7 +17,7 @@
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 #define DYNAMIC_ARRAY(type, typename)									 	\
-	typedef struct { type *data; size_t size; size_t capacity;} typename;	\
+	typedef struct typename{ type *data; size_t size; size_t capacity;} typename;	\
 																			\
 	void typename##_init(typename *arr, size_t size, type* c_arr){			\
 		if (c_arr == NULL){													\
