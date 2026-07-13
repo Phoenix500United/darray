@@ -1,3 +1,6 @@
+
+#ifndef DARRAY_H
+#define DARRAY_H
 //README
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // 
@@ -17,7 +20,7 @@
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 #define DYNAMIC_ARRAY(type, typename)									 	\
-	typedef struct { type *data; size_t size; size_t capacity;} typename;	\
+	typedef struct { type *data; size_t size; size_t capacity;}typename;	\
 																			\
 	void typename##_init(typename *arr, size_t size, type* c_arr){			\
 		if (c_arr == NULL){													\
@@ -460,4 +463,5 @@ do {																					\
 // I could just double the size untill its enough to fit or something imma leave it in the TODO section for now
 // it will work but it could be made better
 
-*/
+*/ 
+#endif
