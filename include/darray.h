@@ -102,12 +102,14 @@
 	}																				\
 	void typename##_array_append(typename *arr1, typename *arr2){					\
 		size_t newsize = arr1->size + arr2->size;									\
+																					\
 		if(arr1->capacity < newsize){												\
 			arr1->capacity = arr1->size <= arr2->size ? (arr2->size ? 2*arr2->size : 8) : 2*arr1->size; \
 			arr1->data = realloc(arr1->data, arr1->capacity * sizeof(*(arr1->data)));\
 		}																			\
 		for(size_t i = 0; i < arr2->size; ++i){										\
 			arr1->data[arr1->size+i] = arr2->data[i];								\
+																					\
 		}																			\
 		arr1->size = newsize;														\
 	}																				\
@@ -120,6 +122,7 @@
 		for(size_t i = 0; i < buffer; ++i){													\
 			arr1->data[arr1->size+i] = arr2[i];												\
 		}																					\
+		arr1->size = newsize;																\
 	}																						\
 																							
 
