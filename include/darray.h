@@ -10,7 +10,7 @@
 // 		  	 | the dynamic array of that type.
 //			 |
 // USE:	 	 | DYNAMIC_ARRAY(type, typename) type is the type of the elements of the array and typename is the name of the array
-//			 | eg DYNAMIC_ARRAY(char, string) procduces a dynamic array of chars called string
+//			 | eg DYNAMIC_ARRAY(char, string) produces a dynamic array of chars called string
 //			 |	
 // IMPORTANT:| DYNAMIC_ARRAY_MULTILEVEL(type, typename) is required for arrays of arrays or custom data types that contain 
 //			 | heap allocated data as to ensure no memory leaks. If using DYNAMIC_ARRAY_MULTILEVEL on a custom data type
