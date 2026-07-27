@@ -216,6 +216,15 @@
 		memcpy(arr1.data + arr1.size, arr2, buffer);								\
 		arr1->size = newsize;														\
 	}																				\
+	inline void typename##_c_array_append(typename *arr1, const type *arr2, const size_t buffer){ \
+		size_t newsize = arr1->size + buffer;												\
+		if(arr1->capacity < newsize){														\
+			arr1->capacity = arr1->size <= buffer ? (buffer ? 2*buffer : 8) : 2*arr1->size; \
+			arr1->data = realloc(arr1->data, arr1->capacity * sizeof(*(arr1->data)));		\
+		}																					\
+		memcpy(arr1.data + arr1.size, arr2, buffer);										\
+		arr1->size = newsize;																\
+	}																						\
 
 
 #endif
