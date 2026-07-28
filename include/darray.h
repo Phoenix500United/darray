@@ -48,7 +48,7 @@
 			arr->size = size;												\
 			arr->capacity = size;											\
 			arr->data = (type*)malloc(arr->capacity * sizeof(type));		\
-			memcpy(arr->data, c_arr, size);									\
+			memcpy(arr->data, c_arr, size * sizeof(type));									\
 		}																	\
 	}																		\
 	static inline void typename##_push(typename *arr, type value){					\
@@ -94,12 +94,12 @@
 			arr->capacity = arr->capacity ? arr->capacity*2 : 8;			\
 			arr->data = realloc(arr->data, arr->capacity * sizeof(type)); 	\
 		}																	\
-		memmove(arr->data+index+1, arr->data+index, arr->size-index);		\
+		memmove(arr->data+index+1, arr->data+index, (arr->size-index) * sizeof(type));		\
 		arr->data[index] = value;											\
 		arr->size++;														\
 	}																		\
 	static inline void typename##_erase(typename *arr, size_t index){				\
-		memmove(arr->data+index + 1, arr->data+index + 1, arr->size-index);	\
+		memmove(arr->data+index + 1, arr->data+index + 1, (arr->size-index) * sizeof(type));	\
 		arr->size--;														\
 	}																		\
 	static inline void typename##_erase_range(typename *arr, size_t rangestart, size_t rangeend){	\
@@ -128,7 +128,7 @@
 			arr1->capacity = arr1->size <= buffer ? (buffer ? 2*buffer : 8) : 2*arr1->size; \
 			arr1->data = realloc(arr1->data, arr1->capacity * sizeof(*(arr1->data)));		\
 		}																					\
-		memcpy(arr1->data + arr1->size, arr2, buffer);										\
+		memcpy(arr1->data + arr1->size, arr2, buffer * sizeof(type));										\
 		arr1->size = newsize;																\
 	}																						\
 																							
@@ -148,7 +148,7 @@
 			arr->size = size;												\
 			arr->capacity = size;											\
 			arr->data = (type*)malloc(arr->capacity * sizeof(type));		\
-			memcpy(arr->data, c_arr, size);									\
+			memcpy(arr->data, c_arr, size * sizeof(type));									\
 		}																	\
 	}																		\
 																			\
@@ -207,7 +207,7 @@
 	}																		\
 	void typename##_erase(typename *arr, size_t index){						\
 		type##_free(&arr->data[index]);										\
-		memmove(arr->data+index + 1, arr->data+index + 1, arr->size - index);\
+		memmove(arr->data+index + 1, arr->data+index + 1, (arr->size - index) * sizeof(type));\
 		--arr->size;														\
 	}																		\
 	void typename##_erase_range(typename *arr, size_t rangestart, size_t rangeend){	\
@@ -219,7 +219,7 @@
 			type##_free(&arr->data[i]);												\
 			arr->data[i] = arr->data[i + rangedif];									\
 		}																			\
-		memmove(arr->data+rangestart, arr->data+rangeend, arr->size - rangeend);	\
+		memmove(arr->data+rangestart, arr->data+rangeend, (arr->size - rangeend)*sizeof(type));	\
 		arr->size -= rangeend - rangestart; 										\
 	}																				\
 	void typename##_array_append(typename *arr1, typename *arr2){					\
@@ -228,7 +228,7 @@
 			arr1->capacity = arr1->size <= arr2->size ? (arr2->size ? 2*arr2->size : 8) : 2*arr1->size; \
 			arr1->data = realloc(arr1->data, arr1->capacity * sizeof(*(arr1->data)));\
 		}																			\
-		memcpy(arr1->data + arr1->size, arr2->data, arr2->size);					\
+		memcpy(arr1->data + arr1->size, arr2->data, (arr2->size)*sizeof(type));					\
 		arr1->size = newsize;														\
 	}																				\
 	static inline void typename##_c_array_append(typename *arr1, const type *arr2, const size_t buffer){ \
@@ -237,7 +237,7 @@
 			arr1->capacity = arr1->size <= buffer ? (buffer ? 2*buffer : 8) : 2*arr1->size; \
 			arr1->data = realloc(arr1->data, arr1->capacity * sizeof(*(arr1->data)));		\
 		}																					\
-		memcpy(arr1->data + arr1->size, arr2, buffer);										\
+		memcpy(arr1->data + arr1->size, arr2, buffer * sizeof(type));										\
 		arr1->size = newsize;																\
 	}																						\
 
