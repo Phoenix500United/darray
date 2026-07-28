@@ -19,7 +19,22 @@
 //			 |
 // NOTE: 	 | its not perfectly safe since there are no checks on realloc and malloc so it can fail silently. 
 //			 | and there are no checks on out of bounds indexint ect ect
-// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= 
+
+
+//List of functions
+//_init(*arr, size, *c_arr) Initilizes the array if passed a NULL ptr in the c_arr argument it will initilize to size 0, capacity 0
+//_push(*arr, value) Pushes a item onto the end of the array 
+//_pop(*arr) pops the last value off of the array
+//_recalculate_capacity(*arr) resizes teh capacity to match the size
+//_clear(*arr) resizes the array back to 0
+//_reset(*arr) resizes and frees data
+//_reserve(*arr, newcapacity) reserves more uninitilized memory
+//_insert(*arr, value, index) inserts value at index
+//_erase(*arr, index) erases the item at index
+//_erase_range(*arr, rangestart, rangeend) erases range beteen rangestart and rangeend
+//_array_append(*arr1, *arr2) appends arr2 and the end of arr1
+//_c_array_appent(*arr, *c_arr) appends c array on the end of arr1
 
 #define DYNAMIC_ARRAY(type, typename)									 	\
 	typedef struct typename{ type *data; size_t size; size_t capacity;} typename;	\
