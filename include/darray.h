@@ -148,33 +148,32 @@
 			arr->size = size;												\
 			arr->capacity = size;											\
 			arr->data = (type*)malloc(arr->capacity * sizeof(type));		\
-			memcpy(arr->data, c_arr, size * sizeof(type));									\
+			memcpy(arr->data, c_arr, size * sizeof(type));					\
 		}																	\
 	}																		\
 																			\
-	static inline void typename##_push(typename *arr, type value){					\
+	static inline void typename##_push(typename *arr, type value){			\
 		if(arr->size >= arr->capacity){										\
 			arr->capacity = arr->capacity ? arr->capacity * 2 : 8;			\
 			arr->data = realloc(arr->data, arr->capacity);					\
 		}																	\
 		arr->data[arr->size++] = value;										\
 	}																		\
-	static inline type typename##_pop(typename *arr){								\
+	static inline type typename##_pop(typename *arr){						\
 		type tmp = arr->data[--arr->size];									\
-		type##_free(&arr->data[arr->size]);									\
 		return tmp; 														\
 	}																		\
-	static inline void typename##_recalculate_capacity(typename *arr){				\
+	static inline void typename##_recalculate_capacity(typename *arr){		\
 		arr->capacity = arr->size;											\
 		arr->data = realloc(arr->data, arr->capacity * sizeof(type));		\
 	}																		\
-	static inline void typename##_clear(typename *arr){							\
+	static inline void typename##_clear(typename *arr){						\
 		for(size_t i = 0; i < arr->size; ++i){								\
 			type##_free(&arr->data[i]); 									\
 		}																	\
 		arr->size = 0;														\
 	}																		\
-	static inline void typename##_reset(typename *arr){							\
+	static inline void typename##_reset(typename *arr){						\
 		arr->size = 0;														\
 		arr->capacity = 0;													\
 		for(size_t i = 0; i < arr->size; ++i){								\
