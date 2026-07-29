@@ -31,10 +31,14 @@
 //_reset(*arr) resizes and frees data
 //_reserve(*arr, newcapacity) reserves more uninitilized memory
 //_insert(*arr, value, index) inserts value at index
-//_erase(*arr, index) erases the item at index
+//_erase(*arr, index) removes the item at index
 //_erase_range(*arr, rangestart, rangeend) erases range beteen rangestart and rangeend
 //_array_append(*arr1, *arr2) appends arr2 and the end of arr1
 //_c_array_appent(*arr, *c_arr) appends c array on the end of arr1
+// MULTILEVEL
+//_deep_erase(*arr, index) same as regular erase execpts calls type_free() for each element to ensure no memory leakage
+//_deep_erase_range(*arr, rangestart, rangeend) same as deep_erase but over a range
+
 
 #define DYNAMIC_ARRAY(type, typename)									 	\
 	typedef struct typename{ type *data; size_t size; size_t capacity;} typename;	\
@@ -74,7 +78,7 @@
 		free(arr->data);													\
 		arr->data = NULL;													\
 	}																		\
-	static inline void typename##_free(typename *arr){								\
+	static inline void typename##_free(typename *arr){						\
 		free(arr->data);													\
 	}																		\
 	static inline void typename##_reserve(typename *arr, size_t newcapacity){		\
@@ -204,12 +208,26 @@
 		arr->data[index] = value;											\
 		arr->size++;														\
 	}																		\
-	void typename##_erase(typename *arr, size_t index){						\
+		static inline void typename##_erase(typename *arr, size_t index){				\
+		memmove(arr->data+index + 1, arr->data+index + 1, (arr->size-index) * sizeof(type));	\
+		arr->size--;														\
+	}																		\
+	static inline void typename##_erase_range(typename *arr, size_t rangestart, size_t rangeend){	\
+		if (rangestart > rangeend){												 	\
+			return;																	\
+		}																			\
+		for(size_t i = rangestart; i < rangeend && rangeend + i < arr->size; i++){	\
+			arr->data[i + rangestart] = arr->data[i + rangeend];					\
+		}																			\
+		memmove(arr->data+rangestart, arr->data+rangeend, arr->size - rangeend);	\
+		arr->size -= rangeend - rangestart; 										\
+	}																				\
+	void typename##_deep_erase(typename *arr, size_t index){						\
 		type##_free(&arr->data[index]);										\
 		memmove(arr->data+index + 1, arr->data+index + 1, (arr->size - index) * sizeof(type));\
 		--arr->size;														\
 	}																		\
-	void typename##_erase_range(typename *arr, size_t rangestart, size_t rangeend){	\
+	void typename##_deep_erase_range(typename *arr, size_t rangestart, size_t rangeend){	\
 		if (rangestart > rangeend){												 	\
 			return;																	\
 		}																			\
