@@ -12,7 +12,7 @@
 // USE:	 	 | DYNAMIC_ARRAY(type, typename) type is the type of the elements of the array and typename is the name of the array
 //			 | eg DYNAMIC_ARRAY(char, string) produces a dynamic array of chars called string
 //			 |	
-// IMPORTANT:| DYNAMIC_ARRAY_MULTILEVEL(type, typename) is required for arrays of arrays or custom data types that contain 
+// IMPORTANT:| DYNAMIC_ARRAY_MULTILEVEL(type, typename) is for custom data types that contain 
 //			 | heap allocated data as to ensure no memory leaks. If using DYNAMIC_ARRAY_MULTILEVEL on a custom data type
 //			 | a function called A_free(A* a) where A is the name of the custom data type which handles freeing any data 
 //			 | contained within must exist 
@@ -43,19 +43,34 @@
 #define DYNAMIC_ARRAY(type, typename)									 	\
 	typedef struct typename{ type *data; size_t size; size_t capacity;} typename;	\
 																			\
-	static inline void typename##_init(typename *arr, size_t size, type* c_arr){	\
+	static inline void typename##_init(typename *arr, size_t bufferSize, type* c_arr){	\
 		if (c_arr == NULL){													\
 			arr->data = NULL;												\
 			arr->size = 0;													\
 			arr->capacity = 0;												\
 		}else{																\
-			arr->size = size;												\
-			arr->capacity = size;											\
+			arr->size = bufferSize;												\
+			arr->capacity = bufferSize;											\
 			arr->data = (type*)malloc(arr->capacity * sizeof(type));		\
-			memcpy(arr->data, c_arr, size * sizeof(type));									\
+			memcpy(arr->data, c_arr, bufferSize * sizeof(type));					\
 		}																	\
 	}																		\
-	static inline void typename##_push(typename *arr, type value){					\
+	static inline void typename##_reinit(typename *arr, size_t bufferSize, type* c_arr){ \
+		if (c_arr == NULL){													\
+			arr->size = 0;													\
+		}else if(arr->data == NULL){											\
+			typename##_init(arr, bufferSize, c_arr);						\
+		}else{																\
+			if(arr->capacity < bufferSize){									\
+				arr->size = bufferSize;										\
+				arr->capacity = bufferSize;									\
+				arr->data = realloc(arr->data, arr->capacity);				\
+			}																\
+			memcpy(arr->data, c_arr, bufferSize * sizeof(type));					\
+		}																	\
+																			\
+	}																		\
+	static inline void typename##_push(typename *arr, type value){			\
 		if(arr->size >= arr->capacity){										\
 			arr->capacity = arr->capacity ? arr->capacity * 2 : 8;			\
 			arr->data = realloc(arr->data, arr->capacity);					\
