@@ -234,7 +234,7 @@
 		for(size_t i = rangestart; i < rangeend && rangeend + i < arr->size; i++){	\
 			arr->data[i + rangestart] = arr->data[i + rangeend];					\
 		}																			\
-		memmove(arr->data+rangestart, arr->data+rangeend, arr->size - rangeend);	\
+		memmove(arr->data+rangestart, arr->data+rangeend, (arr->size - rangeend)* sizeof(type));	\
 		arr->size -= rangeend - rangestart; 										\
 	}																				\
 	void typename##_deep_erase(typename *arr, size_t index){						\
