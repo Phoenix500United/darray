@@ -12,11 +12,12 @@
 // USE:	 	 | DYNAMIC_ARRAY(type, typename) type is the type of the elements of the array and typename is the name of the array
 //			 | eg DYNAMIC_ARRAY(char, string) produces a dynamic array of chars called string
 //			 |	
-// IMPORTANT:| DYNAMIC_ARRAY_MULTILEVEL(type, typename) is for custom data types that contain 
-//			 | heap allocated data as to ensure no memory leaks. If using DYNAMIC_ARRAY_MULTILEVEL on a custom data type
-//			 | a function called A_free(A* a) where A is the name of the custom data type which handles freeing any data 
-//			 | contained within must exist 
-//			 |
+// IMPORTANT:| DYNAMIC_ARRAY_MULTILEVEL(type, typename, free_function) is for custom data types that contain 
+//			 | heap allocated data as to ensure no memory leaks. If using DYNAMIC_ARRAY_MULTILEVEL on a custom data you must 
+//           | provide a function into free_function which takes (A*) where A is the name of the custom data type which handles 
+//			 | freeing any data contained within for using a darray of adarray free_function would be darray_free where
+//			 | darray is the name of the array
+//			 |  
 // NOTE: 	 | its not perfectly safe since there are no checks on realloc and malloc so it can fail silently. 
 //			 | and there are no checks on out of bounds indexing ect ect
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= 
