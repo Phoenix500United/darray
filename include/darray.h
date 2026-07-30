@@ -65,7 +65,7 @@
 			if(arr->capacity < bufferSize){									\
 				arr->size = bufferSize;										\
 				arr->capacity = bufferSize;									\
-				arr->data = realloc(arr->data, arr->capacity);				\
+				arr->data = realloc(arr->data, arr->capacity * sizeof(type));				\
 			}																\
 			memcpy(arr->data, c_arr, bufferSize * sizeof(type));					\
 		}																	\
@@ -74,7 +74,7 @@
 	static inline void typename##_push(typename *arr, type value){			\
 		if(arr->size >= arr->capacity){										\
 			arr->capacity = arr->capacity ? arr->capacity * 2 : 8;			\
-			arr->data = realloc(arr->data, arr->capacity);					\
+			arr->data = realloc(arr->data, arr->capacity * sizeof(type));					\
 		}																	\
 		arr->data[arr->size++] = value;										\
 	}																		\
@@ -189,7 +189,7 @@
 	}																		\
 	static inline void typename##_clear(typename *arr){						\
 		for(size_t i = 0; i < arr->size; ++i){								\
-			free_function##(&arr->data[i]); 									\
+			free_function##(&arr->data[i]); 								\
 		}																	\
 		arr->size = 0;														\
 	}																		\
@@ -197,14 +197,14 @@
 		arr->size = 0;														\
 		arr->capacity = 0;													\
 		for(size_t i = 0; i < arr->size; ++i){								\
-			free_function##(&arr->data[i]);										\
+			free_function##(&arr->data[i]);									\
 		}																	\
 		free(arr->data);													\
 		arr->data = NULL;													\
 	}																		\
-	static inline void typename##_free(typename *arr){								\
+	static inline void typename##_free(typename *arr){						\
 		for(size_t i = 0; i < arr->size; ++i){								\
-			free_function##(&arr->data[i]);										\
+			free_function##(&arr->data[i]);									\
 		}																	\
 		free(arr->data);													\
 	}																		\
