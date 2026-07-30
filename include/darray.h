@@ -18,7 +18,7 @@
 //			 | contained within must exist 
 //			 |
 // NOTE: 	 | its not perfectly safe since there are no checks on realloc and malloc so it can fail silently. 
-//			 | and there are no checks on out of bounds indexint ect ect
+//			 | and there are no checks on out of bounds indexing ect ect
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= 
 
 
@@ -156,7 +156,7 @@
 // MULTI LEVEL FOR WHEN THE TYPE CONTAINED IN THE ARRAY CONTAINS A HEAP POINTER AND REQUIRES EXTRA FREEING TO ENSURE NO MEM LEAKS 
 //==================================================================================================================================
 
-#define DYNAMIC_ARRAY_MULTILEVEL(type, typename)							\
+#define DYNAMIC_ARRAY_MULTILEVEL(type, typename, free_function)				\
 	typedef struct { type *data; size_t size; size_t capacity;} typename;	\
 	static inline void typename##_init(typename *arr, size_t size, type* c_arr){	\
 		if (c_arr == NULL){													\
@@ -188,7 +188,7 @@
 	}																		\
 	static inline void typename##_clear(typename *arr){						\
 		for(size_t i = 0; i < arr->size; ++i){								\
-			type##_free(&arr->data[i]); 									\
+			free_function##(&arr->data[i]); 									\
 		}																	\
 		arr->size = 0;														\
 	}																		\
@@ -196,14 +196,14 @@
 		arr->size = 0;														\
 		arr->capacity = 0;													\
 		for(size_t i = 0; i < arr->size; ++i){								\
-			type##_free(&arr->data[i]);										\
+			free_function##(&arr->data[i]);										\
 		}																	\
 		free(arr->data);													\
 		arr->data = NULL;													\
 	}																		\
 	static inline void typename##_free(typename *arr){								\
 		for(size_t i = 0; i < arr->size; ++i){								\
-			type##_free(&arr->data[i]);										\
+			free_function##(&arr->data[i]);										\
 		}																	\
 		free(arr->data);													\
 	}																		\
@@ -238,7 +238,7 @@
 		arr->size -= rangeend - rangestart; 										\
 	}																				\
 	void typename##_deep_erase(typename *arr, size_t index){						\
-		type##_free(&arr->data[index]);										\
+		free_function##(&arr->data[index]);										\
 		memmove(arr->data+index + 1, arr->data+index + 1, (arr->size - index) * sizeof(type));\
 		--arr->size;														\
 	}																		\
@@ -248,7 +248,7 @@
 		}																			\
 		size_t rangedif = rangeend-rangestart;										\
 		for(size_t i = rangestart; i < rangeend; ++ i){								\
-			type##_free(&arr->data[i]);												\
+			free_function##(&arr->data[i]);												\
 			arr->data[i] = arr->data[i + rangedif];									\
 		}																			\
 		memmove(arr->data+rangestart, arr->data+rangeend, (arr->size - rangeend)*sizeof(type));	\
