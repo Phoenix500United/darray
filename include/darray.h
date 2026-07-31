@@ -41,36 +41,81 @@
 //_deep_erase_range(*arr, rangestart, rangeend) same as deep_erase but over a range
 
 
+
+
+/*
+	This section of macros are the actual implementation of the logic in the functions of the main macros. 
+
+	This approach was decided on due to having multiple macros that implement the code and to break up the structure 
+	to make commenting easyer as with a large macro you can't comment after each function due to the \.
+
+	No do {} while(0)s where used because these macros are only to be used within the header so it is know exactly how
+	they will be used. 
+	
+	Due to containing text such as *arr, value, *c_arr or buffer a function signature of the function it would be  
+	used for is provided above the macro to show the types of these values and what the function returns
+*/
+
+//typname typename_empty() (little confusing it returns typename and the function would be called typename_empty)
+#define _EMPTY(type, typename)	\
+		typename arr;			\
+		arr.data = NULL;		\
+		arr.size = 0;			\
+		arr.capacity = 0;		\
+		return arr;				\
+// returns an empty array 
+
+
+
+
+//bool typename_init(typename *arr, size_t buffer, type *c_arr)
+#define _INIT(type, typename)															\
+		if (c_arr == NULL){																\
+			*arr = NULL;																\
+			arr->capacity = 0;															\
+			arr->size = 0;																\
+		}else{																			\
+																						\
+			arr->size = buffer;															\
+			arr->capacity = buffer;														\
+			arr->data = (type*)malloc(arr->capacity * sizeof(type));					\
+			if(arr->data)(){															\
+				memcpy(arr->data, c_arr, bufferSize * sizeof(type));					\
+			}else{																		\
+				arr->capacity = 0;														\
+				arr->size = 0;	 														\
+				return false;															\
+			}																			\
+		}
+
+#define _HOMOGENOUS_INIT(type, typename)
+#define _REINIT(type, typename)
+#define _PUSH(type, typename)
+#define _POP(type, typename)
+#define _RECALCULATE_CAPACITY(type, typename)
+#define _CLEAR(type, typename)
+#define _RESET(type, typename)
+#define _INSERT(type, typename)
+#define _INSERT_C_ARRAY(type, typename)
+#define _INSERT_ARRAY(type, typename)
+#define _ERASE(type, typename)
+#define _ERASE_RANGE(type, typename)
+#define _C_ARRAY_APPEND(type, typename)
+#define _ARRAY_APPEND(type, typename)
+#define _RESET(type, typename)
+#define _FREE(type, typename)
+#define _MLFREE(type, typename)
+#define _MLCLEAR(type, typename)
+#define _MLRESET(type, typename)
+#define _DEEP_ERASE(type, typename)
+#define _DEEP_ERASE_RANGE(type, typename)
+
+
 #define DYNAMIC_ARRAY(type, typename)									 	\
 	typedef struct typename{ type *data; size_t size; size_t capacity;} typename;	\
 																			\
-	static inline void typename##_init(typename *arr, size_t bufferSize, type* c_arr){	\
-		if (c_arr == NULL){													\
-			arr->data = NULL;												\
-			arr->size = 0;													\
-			arr->capacity = 0;												\
-		}else{																\
-			arr->size = bufferSize;												\
-			arr->capacity = bufferSize;											\
-			arr->data = (type*)malloc(arr->capacity * sizeof(type));		\
-			memcpy(arr->data, c_arr, bufferSize * sizeof(type));					\
-		}																	\
-	}																		\
-	static inline void typename##_reinit(typename *arr, size_t bufferSize, type* c_arr){ \
-		if (c_arr == NULL){													\
-			arr->size = 0;													\
-		}else if(arr->data == NULL){											\
-			typename##_init(arr, bufferSize, c_arr);						\
-		}else{																\
-			if(arr->capacity < bufferSize){									\
-				arr->size = bufferSize;										\
-				arr->capacity = bufferSize;									\
-				arr->data = realloc(arr->data, arr->capacity * sizeof(type));				\
-			}																\
-			memcpy(arr->data, c_arr, bufferSize * sizeof(type));					\
-		}																	\
-																			\
-	}																		\
+																	\
+																		\
 	static inline void typename##_push(typename *arr, type value){			\
 		if(arr->size >= arr->capacity){										\
 			arr->capacity = arr->capacity ? arr->capacity * 2 : 8;			\
@@ -81,7 +126,7 @@
 	static inline type typename##_pop(typename *arr){								\
 		return arr->data[--arr->size];										\
 	}																		\
-	static inline void typename##_recalculate_capacity(typename *arr){				\
+	void typename##_recalculate_capacity(typename *arr){				\
 		arr->capacity = arr->size;											\
 		arr->data = realloc(arr->data, arr->capacity * sizeof(type));		\
 	}																		\
@@ -224,7 +269,7 @@
 		arr->data[index] = value;											\
 		arr->size++;														\
 	}																		\
-		static inline void typename##_erase(typename *arr, size_t index){				\
+	static inline void typename##_erase(typename *arr, size_t index){				\
 		memmove(arr->data+index + 1, arr->data+index + 1, (arr->size-index) * sizeof(type));	\
 		arr->size--;														\
 	}																		\
@@ -238,12 +283,12 @@
 		memmove(arr->data+rangestart, arr->data+rangeend, (arr->size - rangeend)* sizeof(type));	\
 		arr->size -= rangeend - rangestart; 										\
 	}																				\
-	void typename##_deep_erase(typename *arr, size_t index){						\
+	static inline void typename##_deep_erase(typename *arr, size_t index){						\
 		free_function##(&arr->data[index]);										\
 		memmove(arr->data+index + 1, arr->data+index + 1, (arr->size - index) * sizeof(type));\
 		--arr->size;														\
 	}																		\
-	void typename##_deep_erase_range(typename *arr, size_t rangestart, size_t rangeend){	\
+	static inline void typename##_deep_erase_range(typename *arr, size_t rangestart, size_t rangeend){	\
 		if (rangestart > rangeend){												 	\
 			return;																	\
 		}																			\
@@ -255,7 +300,7 @@
 		memmove(arr->data+rangestart, arr->data+rangeend, (arr->size - rangeend)*sizeof(type));	\
 		arr->size -= rangeend - rangestart; 										\
 	}																				\
-	void typename##_array_append(typename *arr1, typename *arr2){					\
+	static inline void typename##_array_append(typename *arr1, typename *arr2){					\
 		size_t newsize = arr1->size + arr2->size;									\
 		if(arr1->capacity < newsize){												\
 			arr1->capacity = arr1->size <= arr2->size ? (arr2->size ? 2*arr2->size : 8) : 2*arr1->size; \
@@ -274,5 +319,29 @@
 		arr1->size = newsize;																\
 	}																						\
 
+
+#undef _EMPTY
+#undef _INIT
+#undef _HOMOGENOUS_INIT
+#undef _REINIT
+#undef _PUSH
+#undef _POP
+#undef _RECALCULATE_CAPACITY
+#undef _CLEAR
+#undef _RESET
+#undef _INSERT
+#undef _INSERT_C_ARRAY
+#undef _INSERT_ARRAY
+#undef _ERASE
+#undef _ERASE_RANGE
+#undef _C_ARRAY_APPEND
+#undef _ARRAY_APPEND
+#undef _RESET
+#undef _FREE
+#undef _MLFREE
+#undef _MLCLEAR
+#undef _MLRESET
+#undef _DEEP_ERASE
+#undef _DEEP_ERASE_RANGE
 
 #endif
