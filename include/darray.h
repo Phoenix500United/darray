@@ -181,7 +181,7 @@
 		arr->capacity = 0;            \
 		free(arr->data);              \
 		arr->data = NULL;
-//fully resets teh array frees data and sets size and capacity to 0
+//fully resets the array frees data and sets size and capacity to 0
 
 // void typename_free(type, typename)
 #define _FREE(type, typename)		\
@@ -199,18 +199,56 @@
 			arr->data = tmp;                                                                  \
 			arr->capacity = capacity;                                                         \
 		}                                                                                     \
-		memmove(arr->data+index, arr->data+index+1, (arr->size-index) * sizeof(type));        \
+		memmove(arr->data+index+1, arr->data+index, (arr->size-index) * sizeof(type));        \
 		arr->data[index] = item;                                                              \
 		arr->size++;																		  \
 		return true;
 // inserts an intem into the array at the given index
 
-#define _INSERT_C_ARRAY(type, typename)
-#define _INSERT_ARRAY(type, typename)
-#define _ERASE(type, typename)
-#define _ERASE_RANGE(type, typename)
+// bool typename_insert_c_array(typename* arr, size_t index, size_t buffer, type* c_arr)
+#define _INSERT_C_ARRAY(type, typename)                                                                               \
+		if(arr->size + size > arr->capacity){                                                                         \
+			size_t capacity = arr->capacity*2 > (arr->size + buffer) ? arr->capacity*2  :  arr->size + buffer;        \
+			type tmp = (*type)realloc(arr->data, capacity * sizeof(type));                                            \
+			if(!tmp){                                                                                                 \
+				return false;                                                                                         \
+			}                                                                                                         \
+			arr->data = tmp;                                                                                          \
+			arr->capacity = capacity;                                                                                 \
+		}                                                                                                             \
+		memmove(arr->data+index+buffer, arr->data+index, (arr->size-index) * sizeof(type));                           \
+		memcopy(arr->data+index+buffer, c_arr, buffer * sizeof(type));                                                \
+		arr->size+=buffer;                                                                                            \
+		return true;
+// inserts a standard c array of size buffer starting at index
+
+// bool typename_insert_array(typename* arr, size_t index, typename* arr2)
+#define _INSERT_ARRAY(type, typename)          \
+		type* c_arr = arr2->data;              \
+		size_t buffer = arr2->size;            \
+		_INSERT_C_ARRAY(type, typename)
+// inserts arr2 into arr1 starting at index
+// bool typename_c_array_appened(typename* arr, size_t buffer, type* c_arr)
 #define _C_ARRAY_APPEND(type, typename)
+		
+
 #define _ARRAY_APPEND(type, typename)
+
+// bool typename_erase(typename* arr, size_t index)
+#define _ERASE(type, typename)                                                                  \
+        if(index >= arr->size ){                                                                \
+			return false;                                                                       \
+		}                                                                                       \
+		memmove(arr->data+index, arr->data+index + 1, (arr->size-index) * sizeof(type));        \
+		arr->size--;                                                                            \
+		return true
+// erases the item at index if index is greater than the size of the array returns false 
+
+
+#define _ERASE_RANGE(type, typename)
+
+//erases a range of elements starting at range start and ending at range end
+
 #define _MLREINIT(type, typename)
 #define _MLHOMOGENOUS_REINIT(type, typename)  
 #define _MLFREE(type, typename)
