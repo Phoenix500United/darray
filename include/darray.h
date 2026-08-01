@@ -50,7 +50,7 @@
 	to make commenting easyer as with a large macro you can't comment after each function due to the \.
 
 	No do {} while(0)s where used because these macros are only to be used within the header so it is know exactly how
-	they will be used. 
+	they will be used and adding them may make already hard to read macros even harder. 
 	
 	Due to containing text such as *arr, value, *c_arr or buffer a function signature of the function it would be  
 	used for is provided above the macro to show the types of these values and what the function returns
@@ -207,7 +207,7 @@
 
 // bool typename_insert_c_array(typename* arr, size_t index, size_t buffer, type* c_arr)
 #define _INSERT_C_ARRAY(type, typename)                                                                               \
-		if(arr->size + size > arr->capacity){                                                                         \
+		if(arr->size + buffer > arr->capacity){                                                                         \
 			size_t capacity = arr->capacity*2 > (arr->size + buffer) ? arr->capacity*2  :  arr->size + buffer;        \
 			type tmp = (*type)realloc(arr->data, capacity * sizeof(type));                                            \
 			if(!tmp){                                                                                                 \
@@ -228,11 +228,25 @@
 		size_t buffer = arr2->size;            \
 		_INSERT_C_ARRAY(type, typename)
 // inserts arr2 into arr1 starting at index
-// bool typename_c_array_appened(typename* arr, size_t buffer, type* c_arr)
-#define _C_ARRAY_APPEND(type, typename)
-		
 
-#define _ARRAY_APPEND(type, typename)
+// bool typename_c_array_appened(typename* arr, size_t buffer, type* c_arr)
+#define _C_ARRAY_APPEND(type, typename)                                                                               \
+		if(arr->size + buffer > arr->capacity){                                                                       \
+			size_t capacity = arr->capacity*2 > (arr->size + buffer) ? arr->capacity*2  :  arr->size + buffer;        \
+			type tmp = (*type)realloc(arr->data, capacity * sizeof(type));                                            \
+			if(!tmp){                                                                                                 \
+				return false;                                                                                         \
+			}                                                                                                         \
+			arr->data = tmp;                                                                                          \
+			arr->capacity = capacity;                                                                                 \
+		}                                                                                                             \
+		memcopy(arr->size, c_arr, buffer * sizeof(type));                                                			  \
+		arr->size+=buffer;																							  \
+
+#define _ARRAY_APPEND(type, typename)          \
+		type* c_arr = arr2.data;               \
+		size_t buffer = arr2.size;             \
+		_C_ARRAY_APPEND(type, typename)
 
 // bool typename_erase(typename* arr, size_t index)
 #define _ERASE(type, typename)                                                                  \
