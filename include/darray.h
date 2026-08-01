@@ -56,54 +56,163 @@
 	used for is provided above the macro to show the types of these values and what the function returns
 */
 
-//typname typename_empty() (little confusing it returns typename and the function would be called typename_empty)
-#define _EMPTY(type, typename)	\
-		typename arr;			\
-		arr.data = NULL;		\
-		arr.size = 0;			\
-		arr.capacity = 0;		\
-		return arr;				\
-// returns an empty array 
+//typename typename_empty() (little confusing it returns typename and the function would be called typename_empty)
+#define _EMPTY(type, typename)        \
+		typename arr;                 \
+		arr.data = NULL;              \
+		arr.size = 0;                 \
+		arr.capacity = 0;             \
+		return arr;
+// returns an empty array             
 
+//bool typename_init(typename* arr, size_t buffer, type *c_arr)
+#define _INIT(type, typename)                                               \
+		if (c_arr == NULL){                                                 \
+			*arr = NULL;                                                    \
+			arr->capacity = 0;                                              \
+			arr->size = 0;                                                  \
+		}else{                                                              \
+			arr->data = (type*)malloc(arr->capacity * sizeof(type));        \
+			if(arr->data)(){                                                \
+				memcpy(arr->data, c_arr, bufferSize * sizeof(type));        \
+				arr->size = buffer;                                         \
+				arr->capacity = buffer;                                     \
+			}else{                                                          \
+				arr->capacity = 0;                                          \
+				arr->size = 0;                                              \
+				return false;                                               \
+			}                                                               \
+		}
+//Initilizes the array with a c_array
 
+//bool typename_homogenous_init(typename *arr, size_t size, type item)
+#define _HOMOGENOUS_INIT(type, typename)                               \
+		arr->data = (type*)malloc(arr->capacity * sizeof(type))        \
+		if(arr->data){                                                 \
+			arr->size = size;                                          \
+			arr->capacity = size;                                      \
+			for(size_t i = 0; i < size; ++i){                          \
+				arr->data[i] = item                                    \
+			}                                                          \
+			return true;                                               \
+		}else{                                                         \
+			arr->capacity = 0;                                         \
+			arr->size = 0;                                             \
+			return false;                                              \
+		}
+//Initilizes the array with one repeating item
 
+// bool typename_reinit(typename *arr, size_t buffer, type* c_arr)
+#define _REINIT(type, typename)                                                \
+		if(arr->data == NULL){                                                 \
+			_INIT(type, typename)                                              \
+		}else{                                                                 \
+			type* tmp = (type*)realloc(arr->data, buffer*sizeof(type));        \
+			if(tmp){                                                           \
+				arr->data = tmp;                                               \
+				memcpy(arr->data, c_arr, buffer*sizeof(type))                  \
+				arr->capacity = buffer;                                        \
+				arr->size = buffer;                                            \
+				return true;                                                   \
+			}else{                                                             \
+				return false;                                                  \
+			}                                                                  \
+		}
+//reinitilizes teh array with a c_arr
 
-//bool typename_init(typename *arr, size_t buffer, type *c_arr)
-#define _INIT(type, typename)															\
-		if (c_arr == NULL){																\
-			*arr = NULL;																\
-			arr->capacity = 0;															\
-			arr->size = 0;																\
-		}else{																			\
-																						\
-			arr->size = buffer;															\
-			arr->capacity = buffer;														\
-			arr->data = (type*)malloc(arr->capacity * sizeof(type));					\
-			if(arr->data)(){															\
-				memcpy(arr->data, c_arr, bufferSize * sizeof(type));					\
-			}else{																		\
-				arr->capacity = 0;														\
-				arr->size = 0;	 														\
-				return false;															\
-			}																			\
+// bool typename_homogenous_reinit(typename *arr, size_t size, type item)
+#define _HOMOGENOUS_REINIT(type, typename)                                     \
+		if(arr->data == NULL){                                                 \
+			_HOMOGENOUS_INIT(type,typename)                                    \
+		}else{                                                                 \
+			type* tmp = (type*)realloc(arr->data, buffer*sizeof(type));        \
+			if(tmp){                                                           \
+				arr->data = tmp;                                               \
+				arr->size = size;                                              \
+				arr->capacity = size;                                          \
+				for(size_t i = 0; i < size; ++i){                              \
+					arr->data[i] = item;                                       \
+				}                                                              \
+				return true;                                                   \
+			}else{                                                             \
+				return false;                                                  \
+			}                                                                  \
 		}
 
-#define _HOMOGENOUS_INIT(type, typename)
-#define _REINIT(type, typename)
-#define _PUSH(type, typename)
-#define _POP(type, typename)
-#define _RECALCULATE_CAPACITY(type, typename)
-#define _CLEAR(type, typename)
-#define _RESET(type, typename)
-#define _INSERT(type, typename)
+// bool typename_push(typename *arr, type item)
+#define _PUSH(type, typename)                                               \
+		if(arr->size >= arr->capacity){                                     \
+			size_t capacity = arr->capacity ? arr->capacity * 2 : 8;        \
+			tmp = realloc(arr->data, capacity * sizeof(type));              \
+			if(!tmp){                                                       \
+				return false;                                               \
+			}                                                               \
+			arr->data = tmp;                                                \
+			arr->capacity = capacity;                                       \
+		}                                                                   \
+		arr->data[arr->size++] = item;                                      \
+		return true;
+
+// type typename_pop(typename *arr, type item)
+#define _POP(type, typename)												\
+		return arr->data[--arr->size];
+// pops the last item off the array 
+
+// bool typename_recalculate_capacity(typename* arr)
+#define _RECALCULATE_CAPACITY(type, typename)                                      \
+		type tmp = (type*)realloc(arr->data, arr->capacity * sizeof(type));        \
+		if(tmp){                                                                   \
+			arr->data = tmp;                                                       \
+			arr->capacity = arr->size;                                             \
+			return true;                                                           \
+		}                                                                          \
+		return false;
+//returns array capacity to its current size
+
+
+// void typename_clear(*typename arr)
+#define _CLEAR(type, typename)\
+		arr->size = 0;
+// clears the array but retains its capacity
+
+// void typename_reset(typename *type)
+#define _RESET(type, typename)        \
+		arr->size = 0;                \
+		arr->capacity = 0;            \
+		free(arr->data);              \
+		arr->data = NULL;
+//fully resets teh array frees data and sets size and capacity to 0
+
+// void typename_free(type, typename)
+#define _FREE(type, typename)		\
+		free(arr->data);
+//only frees data to be used when the array is being discarded
+
+// bool typename_insert(typename* arr, size_t index, type item)
+#define _INSERT(type, typename)                                                               \
+		if(arr->size == arr->capacity){                                                       \
+			size_t capacity = arr->capacity ? arr->capacity*2 : 8;                            \
+			type tmp = (*type)realloc(arr->data, capacity * sizeof(type));                    \
+			if(!tmp){                                                                         \
+				return false;                                                                 \
+			}                                                                                 \
+			arr->data = tmp;                                                                  \
+			arr->capacity = capacity;                                                         \
+		}                                                                                     \
+		memmove(arr->data+index, arr->data+index+1, (arr->size-index) * sizeof(type));        \
+		arr->data[index] = item;                                                              \
+		arr->size++;																		  \
+		return true;
+// inserts an intem into the array at the given index
+
 #define _INSERT_C_ARRAY(type, typename)
 #define _INSERT_ARRAY(type, typename)
 #define _ERASE(type, typename)
 #define _ERASE_RANGE(type, typename)
 #define _C_ARRAY_APPEND(type, typename)
 #define _ARRAY_APPEND(type, typename)
-#define _RESET(type, typename)
-#define _FREE(type, typename)
+#define _MLREINIT(type, typename)
+#define _MLHOMOGENOUS_REINIT(type, typename)  
 #define _MLFREE(type, typename)
 #define _MLCLEAR(type, typename)
 #define _MLRESET(type, typename)
