@@ -295,13 +295,54 @@
 		return true;
 //erases a range of elements starting at range start and ending at range end returns false if rangeend < rangestart or rangeend > arr->size
 
-#define ___MLREINIT(type, typename)
-#define ___MLHOMOGENOUS_REINIT(type, typename)  
-#define ___MLFREE(type, typename)
-#define ___MLCLEAR(type, typename)
-#define ___MLRESET(type, typename)
-#define ___DEEP_ERASE(type, typename)
-#define ___DEEP_ERASE_RANGE(type, typename)
+#define ___MLREINIT(type, typename, free_function)        \
+		for(size_t i = 0; i < arr->size; ++i){            \
+			 free_function(&arr->data[i]);                \
+		}                                                 \
+		___REINIT(type, typename)
+#define ___MLHOMOGENOUS_REINIT(type, typename, free_function)        \
+		for(size_t i = 0; i < arr->size; ++i){                       \
+			 free_function(&arr->data[i]);                           \
+		}                                                            \
+		___HOMOGENOUS_REINIT(type, typename)
+
+#define ___MLFREE(type, typename, free_function)        \
+		for(size_t i = 0; i < arr->size; ++i){          \
+			 free_function(&arr->data[i]);              \
+		}                                               \
+		free(arr->data);
+
+#define ___MLCLEAR(type, typename, free_function)        \
+		for(size_t i = 0; i < arr->size; ++i){           \
+			 free_function(&arr->data[i]);               \
+		}                                                \
+		arr->size = 0;
+#define ___MLRESET(type, typename, free_function)        \
+		for(size_t i = 0; i < arr->size; ++i){           \
+			 free_function(&arr->data[i]);               \
+		}                                                \
+		___RESET(type, typename)
+
+#define ___DEEP_ERASE(type, typename, free_function)                                            \
+		if(index >= arr->size ){                                                                \
+			return false;                                                                       \
+		}                                                                                       \
+		free_function(arr->data+index)                                                          \
+		memmove(arr->data+index, arr->data+index + 1, (arr->size-index) * sizeof(type));        \
+		arr->size--;                                                                            \
+		return true;
+
+#define ___DEEP_ERASE_RANGE(type, typename, free_function)                                                                \
+		if (rangestart > rangeend || rangeend > arr->size){                                                               \
+			return false;                                                                                                 \
+		}                                                                                                                 \
+		size_t reduction = rangeend - rangestart;                                                                         \
+		for(size_t i = rangestart; i < rangeend; i++){                                                                    \
+			free_function(arr->data+i);                                                                                   \
+		}                                                                                                                 \
+		memmove(arr->data + rangestart, arr->data + rangestart + rangeend, (arr->size - rangeend) * sizeof(type));        \
+		arr->size -= reduction;                                                                                           \
+		return true;
 
 
 #define DYNAMIC_ARRAY(type, typename)                                                                                                               \
