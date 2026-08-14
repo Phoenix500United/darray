@@ -160,6 +160,11 @@
 		arr->data[arr->size++] = item;                                      \
 		return true;
 
+// void push_unrestricted(typename *arr, type item)
+#define ___PUSH_UNRESTRICTED(type, typename)        \
+		arr->data[arr->size++] = item;              \
+		return;
+
 // type typename_pop(typename *arr, type item)
 #define ___POP(type, typename)												\
 		return arr->data[--arr->size];
@@ -344,15 +349,19 @@
 		arr->size -= reduction;                                                                                           \
 		return true;
 
+//==================================================================================================================================
+// BASIC DYNAMIC ARRAY INDEX MACRO 
+//==================================================================================================================================
 
 #define DYNAMIC_ARRAY(type, typename)                                                                                                               \
-	___DECLARE_ARRAY(type, typename)                                                                                                                   \
+	___DECLARE_ARRAY(type, typename)                                                                                                                \
 	static inline typename typename##_empty(){_EMPTY(type, typename)}                                                                               \
 	static inline bool typename##_init(typename *arr, size_t buffer, type* c_arr){___INIT(type, typename)}                                          \
 	static inline bool typename##_homogenous_init(typename *arr, size_t size,  type item){___HOMOGENOUS_INIT(type, typename)}                       \
 	static inline bool typename##_reinit(typename *arr, size_t buffer, type* c_arr){___REINIT(type, typename)}                                      \
 	static inline bool typename##_homogenous_reinit(typename *arr, size_t size,  type item){___HOMOGENOUS_REINIT(type, typename)}                   \
 	static inline bool typename##_push(typename *arr, type item){___PUSH(type, typename)}                                                           \
+	static inline void typename##_push_unrestricted(typename *arr, type item){___PUSH_UNRESTRICTED(type, typename)}									\
 	static inline type typename##_pop(typename *arr){___POP(type,typename)}                                                                         \
 	static inline bool typename##_recalculate_capacity(typename *arr){___RECALCULATE_CAPACITY(type,typename)}                                       \
 	static inline void typename##_clear(typename *arr){___CLEAR(type,typename)}                                                                     \
@@ -366,153 +375,129 @@
 	static inline bool typename##_array_append(typename* arr, typename* arr2){___ARRAY_APPEND(type, typename)}                                      \
 	static inline bool typename##_erase(typename *arr, size_t index){___ERASE(type,typename)}                                                       \
 	static inline bool typename##_erase_range(typename *arr, size_t rangestart, size_t rangeend){___ERASE_RANGE(type, typename)}
-	  
-																							
-
+	
 //==================================================================================================================================
 // MULTI LEVEL FOR WHEN THE TYPE CONTAINED IN THE ARRAY CONTAINS A HEAP POINTER AND REQUIRES EXTRA FREEING TO ENSURE NO MEM LEAKS 
 //==================================================================================================================================
 
-#define DYNAMIC_ARRAY_MULTILEVEL(type, typename, free_function)				\
-	typedef struct { type *data; size_t size; size_t capacity;} typename;	\
-	static inline void typename##_init(typename *arr, size_t size, type* c_arr){	\
-		if (c_arr == NULL){													\
-			arr->data = NULL;												\
-			arr->size = 0;													\
-			arr->capacity = 0;												\
-		}else{																\
-			arr->size = size;												\
-			arr->capacity = size;											\
-			arr->data = (type*)malloc(arr->capacity * sizeof(type));		\
-			memcpy(arr->data, c_arr, size * sizeof(type));					\
-		}																	\
-	}																		\
-																			\
-	static inline void typename##_push(typename *arr, type value){			\
-		if(arr->size >= arr->capacity){										\
-			arr->capacity = arr->capacity ? arr->capacity * 2 : 8;			\
-			arr->data = realloc(arr->data, arr->capacity);					\
-		}																	\
-		arr->data[arr->size++] = value;										\
-	}																		\
-	static inline type typename##_pop(typename *arr){						\
-		type tmp = arr->data[--arr->size];									\
-		return tmp; 														\
-	}																		\
-	static inline void typename##_recalculate_capacity(typename *arr){		\
-		arr->capacity = arr->size;											\
-		arr->data = realloc(arr->data, arr->capacity * sizeof(type));		\
-	}																		\
-	static inline void typename##_clear(typename *arr){						\
-		for(size_t i = 0; i < arr->size; ++i){								\
-			 free_function(&arr->data[i]); 								\
-		}																	\
-		arr->size = 0;														\
-	}																		\
-	static inline void typename##_reset(typename *arr){						\
-		arr->size = 0;														\
-		arr->capacity = 0;													\
-		for(size_t i = 0; i < arr->size; ++i){								\
-			 free_function(&arr->data[i]);									\
-		}																	\
-		free(arr->data);													\
-		arr->data = NULL;													\
-	}																		\
-	static inline void typename##_free(typename *arr){						\
-		for(size_t i = 0; i < arr->size; ++i){								\
-			 free_function(&arr->data[i]);									\
-		}																	\
-		free(arr->data);													\
-	}																		\
-	static inline void typename##_reserve(typename *arr, size_t newcapacity){		\
-		if(newcapacity > arr->capacity){									\
-			arr->capacity = newcapacity;									\
-			arr->data = realloc(arr->data, arr->capacity * sizeof(type));	\
-		}																	\
-	}																		\
-																			\
-	static inline void typename##_insert(typename *arr, type value, size_t index){	\
-		if(arr->size == arr->capacity){										\
-			arr->capacity = arr->capacity ? arr->capacity*2 : 8;			\
-			arr->data = realloc(arr->data, arr->capacity * sizeof(type)); 	\
-		}																	\
-		memmove(arr->data+index+1, arr->data+index, arr->size-index);		\
-		arr->data[index] = value;											\
-		arr->size++;														\
-	}																		\
-	static inline void typename##_erase(typename *arr, size_t index){				\
-		memmove(arr->data+index + 1, arr->data+index + 1, (arr->size-index) * sizeof(type));	\
-		arr->size--;														\
-	}																		\
-	static inline void typename##_erase_range(typename *arr, size_t rangestart, size_t rangeend){	\
-		if (rangestart > rangeend){												 	\
-			return;																	\
-		}																			\
-		for(size_t i = rangestart; i < rangeend && rangeend + i < arr->size; i++){	\
-			arr->data[i + rangestart] = arr->data[i + rangeend];					\
-		}																			\
-		memmove(arr->data+rangestart, arr->data+rangeend, (arr->size - rangeend)* sizeof(type));	\
-		arr->size -= rangeend - rangestart; 										\
-	}																				\
-	static inline void typename##_deep_erase(typename *arr, size_t index){						\
-		 free_function(&arr->data[index]);										\
-		memmove(arr->data+index + 1, arr->data+index + 1, (arr->size - index) * sizeof(type));\
-		--arr->size;														\
-	}																		\
-	static inline void typename##_deep_erase_range(typename *arr, size_t rangestart, size_t rangeend){	\
-		if (rangestart > rangeend){												 	\
-			return;																	\
-		}																			\
-		size_t rangedif = rangeend-rangestart;										\
-		for(size_t i = rangestart; i < rangeend; ++ i){								\
-			 free_function(&arr->data[i]);												\
-			arr->data[i] = arr->data[i + rangedif];									\
-		}																			\
-		memmove(arr->data+rangestart, arr->data+rangeend, (arr->size - rangeend)*sizeof(type));	\
-		arr->size -= rangeend - rangestart; 										\
-	}																				\
-	static inline void typename##_array_append(typename *arr1, typename *arr2){					\
-		size_t newsize = arr1->size + arr2->size;									\
-		if(arr1->capacity < newsize){												\
-			arr1->capacity = arr1->size <= arr2->size ? (arr2->size ? 2*arr2->size : 8) : 2*arr1->size; \
-			arr1->data = realloc(arr1->data, arr1->capacity * sizeof(*(arr1->data)));\
-		}																			\
-		memcpy(arr1->data + arr1->size, arr2->data, (arr2->size)*sizeof(type));					\
-		arr1->size = newsize;														\
-	}																				\
-	static inline void typename##_c_array_append(typename *arr1, const type *arr2, const size_t buffer){ \
-		size_t newsize = arr1->size + buffer;												\
-		if(arr1->capacity < newsize){														\
-			arr1->capacity = arr1->size <= buffer ? (buffer ? 2*buffer : 8) : 2*arr1->size; \
-			arr1->data = realloc(arr1->data, arr1->capacity * sizeof(*(arr1->data)));		\
-		}																					\
-		memcpy(arr1->data + arr1->size, arr2, buffer * sizeof(type));										\
-		arr1->size = newsize;																\
-	}																						\
+#define DYNAMIC_ARRAY_MULTILEVEL(type, typename, free_function)                                                                                     \
+	___DECLARE_ARRAY(type, typename)                                                                                                                \
+	static inline typename typename##_empty(){_EMPTY(type, typename)}                                                                               \
+	static inline bool typename##_init(typename *arr, size_t buffer, type* c_arr){___INIT(type, typename)}                                          \
+	static inline bool typename##_homogenous_init(typename *arr, size_t size,  type item){___HOMOGENOUS_INIT(type, typename)}                       \
+	static inline bool typename##_reinit(typename *arr, size_t buffer, type* c_arr){___REINIT(type, typename)}                                      \
+	static inline bool typename##_homogenous_reinit(typename *arr, size_t size,  type item){___HOMOGENOUS_REINIT(type, typename)}                   \
+	static inline bool typename##_push(typename *arr, type item){___PUSH(type, typename)}                                                           \
+	static inline void typename##_push_unrestricted(typename *arr, type item){___PUSH_UNRESTRICTED(type, typename)}									\
+	static inline type typename##_pop(typename *arr){___POP(type,typename)}                                                                         \
+	static inline bool typename##_recalculate_capacity(typename *arr){___RECALCULATE_CAPACITY(type,typename)}                                       \
+	static inline void typename##_clear(typename *arr){___MLCLEAR(type,typename, free_function)}                                                    \
+	static inline void typename##_reset(typename *arr){___MLRESET(type, typename, free_function)}                                                   \
+	static inline void typename##_free(typename *arr){___MLFREE(type, typename, free_function)}                                                     \
+	static inline bool typename##_reserve(typename *arr, size_t newcapacity){___RESERVE(type, typename)}                                            \
+	static inline bool typename##_insert(typename *arr, size_t index, type item){___INSERT(type,typename)}                                          \
+	static inline bool typename##_insert_c_array(typename* arr, size_t index, size_t buffer, type* c_arr){___INSERT_C_ARRAY(type, typename)}        \
+	static inline bool typename##_insert_array(typename* arr, size_t index, typename* arr2){___INSERT_ARRAY(type, typename)}                        \
+	static inline bool typename##_c_array_append(typename* arr, size_t buffer, type* c_arr){___C_ARRAY_APPEND(type, typename)}                      \
+	static inline bool typename##_array_append(typename* arr, typename* arr2){___ARRAY_APPEND(type, typename)}                                      \
+	static inline bool typename##_erase(typename *arr, size_t index){___ERASE(type,typename)}                                                       \
+	static inline bool typename##_deep_erase(typename *arr, size_t index){___DEEP_ERASE(type,typename)}                                             \
+	static inline bool typename##_erase_range(typename *arr, size_t rangestart, size_t rangeend){___ERASE_RANGE(type, typename)}                    \
+	static inline bool typename##_deep_erase_range(typename *arr, size_t rangestart, size_t rangeend){___DEEP_ERASE_RANGE(type, typename)}
 
+//==================================================================================================================================
+// HEADER AND SOURCE SPLIT SPECIFICALLY DESIGNED TO BE USED IN CODE BASES WITH MULIPLT .C FILES AND NOT REQUIRE STATIC INLINE ON EVERY FUNCTION
+//==================================================================================================================================
+	
+#define DYNAMIC_ARRAY_DECL(type, typename)                                                                                 \
+	___DECLARE_ARRAY(type, typename)                                                                                       \
+	/* HEADER DEFINED INLINE FUNCTIONS */                                                                                  \
+	static inline void typename##_clear(typename *arr){___CLEAR(type,typename)}                                            \
+	static inline void typename##_reset(typename *arr){___RESET(type, typename)}                                           \
+	static inline void typename##_free(typename *arr){___FREE(type, typename)}                                             \
+	static inline typename typename##_empty(){_EMPTY(type, typename)}                                                      \
+	static inline void typename##_push_unrestricted(typename *arr, type item){___PUSH_UNRESTRICTED(type, typename)}        \
+	static inline type typename##_pop(typename *arr){___POP(type,typename)}                                                \
+	/* SIGNATURES */                                                                                                       \
+	bool typename##_init(typename *arr, size_t buffer, type* c_arr);                                                       \
+	bool typename##_homogenous_init(typename *arr, size_t size,  type item);                                               \
+	bool typename##_reinit(typename *arr, size_t buffer, type* c_arr);                                                     \
+	bool typename##_homogenous_reinit(typename *arr, size_t size,  type item);                                             \
+	bool typename##_push(typename *arr, type item);                                                                        \
+	bool typename##_recalculate_capacity(typename *arr);                                                                   \
+	bool typename##_reserve(typename *arr, size_t newcapacity);                                                            \
+	bool typename##_insert(typename *arr, size_t index, type item);                                                        \
+	bool typename##_insert_c_array(typename* arr, size_t index, size_t buffer, type* c_arr);                               \
+	bool typename##_insert_array(typename* arr, size_t index, typename* arr2);                                             \
+	bool typename##_c_array_append(typename* arr, size_t buffer, type* c_arr);                                             \
+	bool typename##_array_append(typename* arr, typename* arr2);                                                           \
+	bool typename##_erase(typename *arr, size_t index);                                                                    \
+	bool typename##_erase_range(typename *arr, size_t rangestart, size_t rangeend);
 
-// #undef _EMPTY
-// #undef _INIT
-// #undef _HOMOGENOUS_INIT
-// #undef _REINIT
-// #undef _PUSH
-// #undef _POP
-// #undef _RECALCULATE_CAPACITY
-// #undef _CLEAR
-// #undef _RESET
-// #undef _INSERT
-// #undef _INSERT_C_ARRAY
-// #undef _INSERT_ARRAY
-// #undef _ERASE
-// #undef _ERASE_RANGE
-// #undef _C_ARRAY_APPEND
-// #undef _ARRAY_APPEND
-// #undef _RESET
-// #undef _FREE
-// #undef _MLFREE
-// #undef _MLCLEAR
-// #undef _MLRESET
-// #undef _DEEP_ERASE
-// #undef _DEEP_ERASE_RANGE
+#define DYNAMIC_ARRAY_IMPL                                                                                                            \
+	bool typename##_init(typename *arr, size_t buffer, type* c_arr){___INIT(type, typename)}                                          \
+	bool typename##_homogenous_init(typename *arr, size_t size,  type item){___HOMOGENOUS_INIT(type, typename)}                       \
+	bool typename##_reinit(typename *arr, size_t buffer, type* c_arr){___REINIT(type, typename)}                                      \
+	bool typename##_homogenous_reinit(typename *arr, size_t size,  type item){___HOMOGENOUS_REINIT(type, typename)}                   \
+	bool typename##_push(typename *arr, type item){___PUSH(type, typename)}                                                           \
+	bool typename##_recalculate_capacity(typename *arr){___RECALCULATE_CAPACITY(type,typename)}                                       \
+	bool typename##_reserve(typename *arr, size_t newcapacity){___RESERVE(type, typename)}                                            \
+	bool typename##_insert(typename *arr, size_t index, type item){___INSERT(type,typename)}                                          \
+	bool typename##_insert_c_array(typename* arr, size_t index, size_t buffer, type* c_arr){___INSERT_C_ARRAY(type, typename)}        \
+	bool typename##_insert_array(typename* arr, size_t index, typename* arr2){___INSERT_ARRAY(type, typename)}                        \
+	bool typename##_c_array_append(typename* arr, size_t buffer, type* c_arr){___C_ARRAY_APPEND(type, typename)}                      \
+	bool typename##_array_append(typename* arr, typename* arr2){___ARRAY_APPEND(type, typename)}                                      \
+	bool typename##_erase(typename *arr, size_t index){___ERASE(type,typename)}                                                       \
+	bool typename##_erase_range(typename *arr, size_t rangestart, size_t rangeend){___ERASE_RANGE(type, typename)}
+
+#define DYNAMIC_ARRAY_MULTILEVEL_HEADER(type, typename, free_function)                                                     \
+	___DECLARE_ARRAY(type, typename)                                                                                       \
+	/* HEADER DEFINED INLINE FUNCTIONS */                                                                                  \
+	static inline typename typename##_empty(){_EMPTY(type, typename)}                                                      \
+	static inline void typename##_push_unrestricted(typename *arr, type item){___PUSH_UNRESTRICTED(type, typename)}        \
+	static inline type typename##_pop(typename *arr){___POP(type,typename)}                                                \
+	/* SIGNATURES */                                                                                                       \
+	void typename##_clear(typename *arr);                                                                                  \
+	void typename##_reset(typename *arr);                                                                                  \
+	void typename##_free(typename *arr);                                                                                   \
+	bool typename##_init(typename *arr, size_t buffer, type* c_arr);                                                       \
+	bool typename##_homogenous_init(typename *arr, size_t size,  type item);                                               \
+	bool typename##_reinit(typename *arr, size_t buffer, type* c_arr);                                                     \
+	bool typename##_homogenous_reinit(typename *arr, size_t size,  type item);                                             \
+	bool typename##_push(typename *arr, type item);                                                                        \
+	bool typename##_recalculate_capacity(typename *arr);                                                                   \
+	bool typename##_reserve(typename *arr, size_t newcapacity);                                                            \
+	bool typename##_insert(typename *arr, size_t index, type item);                                                        \
+	bool typename##_insert_c_array(typename* arr, size_t index, size_t buffer, type* c_arr);                               \
+	bool typename##_insert_array(typename* arr, size_t index, typename* arr2);                                             \
+	bool typename##_c_array_append(typename* arr, size_t buffer, type* c_arr);                                             \
+	bool typename##_array_append(typename* arr, typename* arr2);                                                           \
+	bool typename##_erase(typename *arr, size_t index);                                                                    \
+	bool typename##_deep_erase(typename *arr, size_t index)                                                                \
+	bool typename##_erase_range(typename *arr, size_t rangestart, size_t rangeend);                                        \
+	bool typename##_deep_erase_range(typename *arr, size_t rangestart, size_t rangeend);
+
+#define DYNAMIC_ARRAY_MULTILEVEL_SOURCE                                                                                               \
+    bool typename##_init(typename *arr, size_t buffer, type* c_arr){___INIT(type, typename)}                                          \
+    bool typename##_homogenous_init(typename *arr, size_t size, type item){___HOMOGENOUS_INIT(type, typename)}                        \
+    bool typename##_reinit(typename *arr, size_t buffer, type* c_arr){___REINIT(type, typename)}                                      \
+    bool typename##_homogenous_reinit(typename *arr, size_t size, type item){___HOMOGENOUS_REINIT(type, typename)}                    \
+    bool typename##_push(typename *arr, type item){___PUSH(type, typename)}                                                           \
+    bool typename##_recalculate_capacity(typename *arr){___RECALCULATE_CAPACITY(type,typename)}                                       \
+    void typename##_clear(typename *arr){___MLCLEAR(type,typename, free_function)}                                                    \
+    void typename##_reset(typename *arr){___MLRESET(type, typename, free_function)}                                                   \
+    void typename##_free(typename *arr){___MLFREE(type, typename, free_function)}                                                     \
+    bool typename##_reserve(typename *arr, size_t newcapacity){___RESERVE(type, typename)}                                            \
+    bool typename##_insert(typename *arr, size_t index, type item){___INSERT(type,typename)}                                          \
+    bool typename##_insert_c_array(typename* arr, size_t index, size_t buffer, type* c_arr){___INSERT_C_ARRAY(type, typename)}        \
+    bool typename##_insert_array(typename* arr, size_t index, typename* arr2){___INSERT_ARRAY(type, typename)}                        \
+    bool typename##_c_array_append(typename* arr, size_t buffer, type* c_arr){___C_ARRAY_APPEND(type, typename)}                      \
+    bool typename##_array_append(typename* arr, typename* arr2){___ARRAY_APPEND(type, typename)}                                      \
+    bool typename##_erase(typename *arr, size_t index){___ERASE(type,typename)}                                                       \
+    bool typename##_deep_erase(typename *arr, size_t index){___DEEP_ERASE(type,typename)}                                             \
+    bool typename##_erase_range(typename *arr, size_t rangestart, size_t rangeend){___ERASE_RANGE(type, typename)}                    \
+    bool typename##_deep_erase_range(typename *arr, size_t rangestart, size_t rangeend){___DEEP_ERASE_RANGE(type, typename)}          \
+    bool typename##_deep_erase_range(typename *arr, size_t rangestart, size_t rangeend){___DEEP_ERASE_RANGE(type, typename)}
+	
 
 #endif
