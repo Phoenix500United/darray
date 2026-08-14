@@ -450,7 +450,7 @@
 	bool typename##_erase(typename *arr, size_t index){___ERASE(type,typename)}                                                       \
 	bool typename##_erase_range(typename *arr, size_t rangestart, size_t rangeend){___ERASE_RANGE(type, typename)}
 
-#define DYNAMIC_ARRAY_MULTILEVEL_HEADER(type, typename, free_function)                                                     \
+#define DYNAMIC_ARRAY_MULTILEVEL_DECL(type, typename, free_function)                                                       \
 	___DECLARE_ARRAY(type, typename)                                                                                       \
 	/* HEADER DEFINED INLINE FUNCTIONS */                                                                                  \
 	static inline typename typename##_empty(){_EMPTY(type, typename)}                                                      \
@@ -477,7 +477,7 @@
 	bool typename##_erase_range(typename *arr, size_t rangestart, size_t rangeend);                                        \
 	bool typename##_deep_erase_range(typename *arr, size_t rangestart, size_t rangeend);
 
-#define DYNAMIC_ARRAY_MULTILEVEL_SOURCE                                                                                               \
+#define DYNAMIC_ARRAY_MULTILEVEL_IMPL(type, typename, free_function)                                                                  \
     bool typename##_init(typename *arr, size_t buffer, type* c_arr){___INIT(type, typename)}                                          \
     bool typename##_homogenous_init(typename *arr, size_t size, type item){___HOMOGENOUS_INIT(type, typename)}                        \
     bool typename##_reinit(typename *arr, size_t buffer, type* c_arr){___REINIT(type, typename)}                                      \
