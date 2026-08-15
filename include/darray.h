@@ -57,10 +57,12 @@
 	used for is provided above the macro to show the types of these values and what the function returns
 */
 
+#define ___MINIMUM_CAPACITY 8
 
 #define ___DECLARE_ARRAY(type, typename) typedef struct typename{ type *data; size_t size; size_t capacity;} typename; 
 // declares the struct containing a data array pointer which will point to the raw data, a size value containing how many items
 // are contained in the array, and a capacity value containing how many items can fit in allocated space 
+
 
 
 //typename typename_empty() (little confusing it returns typename and the function would be called typename_empty)
@@ -73,167 +75,190 @@
 // returns an empty array             
 
 //bool typename_init(typename* arr, size_t buffer, type *c_arr)
-#define ___INIT(type, typename)                                             \
-		if (c_arr == NULL){                                                 \
-			arr->data = NULL;                                               \
-			arr->capacity = 0;                                              \
-			arr->size = 0;                                                  \
-		}else{                                                              \
-			arr->data = (type*)malloc(buffer * sizeof(type));        \
-			if(arr->data){                                                  \
-				memcpy(arr->data, c_arr, buffer * sizeof(type));            \
-				arr->size = buffer;                                         \
-				arr->capacity = buffer;                                     \
-			}else{                                                          \
-				arr->capacity = 0;                                          \
-				arr->size = 0;                                              \
-				return false;                                               \
-			}                                                               \
+#define ___INIT(type, typename)                                                         \
+		if (c_arr == NULL){                                                             \
+			arr->data = NULL;                                                           \
+			arr->capacity = 0;                                                          \
+			arr->size = 0;                                                              \
+		}else{                                                                          \
+			buffer = buffer > ___MINIMUM_CAPACITY ? buffer : ___MINIMUM_CAPACITY        \
+			arr->data = (type*)malloc(buffer * sizeof(type));                           \
+			if(arr->data){                                                              \
+				memcpy(arr->data, c_arr, buffer * sizeof(type));                        \
+				arr->size = buffer;                                                     \
+				arr->capacity = buffer;                                                 \
+			}else{                                                                      \
+				arr->capacity = 0;                                                      \
+				arr->size = 0;                                                          \
+				return false;                                                           \
+			}                                                                           \
 		}
 //Initilizes the array with a c_array
 
 //bool typename_homogenous_init(typename *arr, size_t size, type item)
-#define ___HOMOGENOUS_INIT(type, typename)                     \
-		arr->data = (type*)malloc(size * sizeof(type));        \
-		if(arr->data){                                         \
-			arr->size = size;                                  \
-			arr->capacity = size;                              \
-			for(size_t i = 0; i < size; ++i){                  \
-				arr->data[i] = item;                           \
-			}                                                  \
-			return true;                                       \
-		}else{                                                 \
-			arr->capacity = 0;                                 \
-			arr->size = 0;                                     \
-			return false;                                      \
+#define ___HOMOGENOUS_INIT(type, typename)                                     \
+		size = size > ___MINIMUM_CAPACITY ? size : ___MINIMUM_CAPACITY;        \
+		arr->data = (type*)malloc(size * sizeof(type));                        \
+		if(arr->data){                                                         \
+			arr->size = size;                                                  \
+			arr->capacity = size;                                              \
+			for(size_t i = 0; i < size; ++i){                                  \
+				arr->data[i] = item;                                           \
+			}                                                                  \
+			return true;                                                       \
+		}else{                                                                 \
+			arr->capacity = 0;                                                 \
+			arr->size = 0;                                                     \
+			return false;                                                      \
 		}
 //Initilizes the array with one repeating item
 
 // bool typename_reinit(typename *arr, size_t buffer, type* c_arr)
-#define ___REINIT(type, typename)                                              \
-		if(arr->data == NULL){                                                 \
-			___INIT(type, typename)                                            \
-		}else{                                                                 \
-			type* tmp = (type*)realloc(arr->data, buffer*sizeof(type));        \
-			if(tmp){                                                           \
-				arr->data = tmp;                                               \
-				memcpy(arr->data, c_arr, buffer*sizeof(type));                 \
-				arr->capacity = buffer;                                        \
-				arr->size = buffer;                                            \
-				return true;                                                   \
-			}else{                                                             \
-				return false;                                                  \
-			}                                                                  \
+#define ___REINIT(type, typename)                                                        \
+		if(arr->data == NULL){                                                           \
+			___INIT(type, typename)                                                      \
+		}else{                                                                           \
+			buffer = buffer > ___MINIMUM_CAPACITY ? buffer : ___MINIMUM_CAPACITY;        \
+			type* tmp = (type*)realloc(arr->data, buffer*sizeof(type));                  \
+			if(tmp){                                                                     \
+				arr->data = tmp;                                                         \
+				memcpy(arr->data, c_arr, buffer*sizeof(type));                           \
+				arr->capacity = buffer;                                                  \
+				arr->size = buffer;                                                      \
+				return true;                                                             \
+			}else{                                                                       \
+				return false;                                                            \
+			}                                                                            \
 		}
 //reinitilizes teh array with a c_arr
 
 // bool typename_homogenous_reinit(typename *arr, size_t size, type item)
-#define ___HOMOGENOUS_REINIT(type, typename)                                 \
-		if(arr->data == NULL){                                               \
-			___HOMOGENOUS_INIT(type,typename)                                \
-		}else{                                                               \
-			type* tmp = (type*)realloc(arr->data, size*sizeof(type));        \
-			if(tmp){                                                         \
-				arr->data = tmp;                                             \
-				arr->size = size;                                            \
-				arr->capacity = size;                                        \
-				for(size_t i = 0; i < size; ++i){                            \
-					arr->data[i] = item;                                     \
-				}                                                            \
-				return true;                                                 \
-			}else{                                                           \
-				return false;                                                \
-			}                                                                \
-		}
+#define ___HOMOGENOUS_REINIT(type, typename)                                  \
+	if(arr->data == NULL){                                                    \
+		___HOMOGENOUS_INIT(type,typename)                                     \
+	}else{                                                                    \
+		size = size > ___MINIMUM_CAPACITY ? size : ___MINIMUM_CAPACITY        \
+		type* tmp = (type*)realloc(arr->data, size*sizeof(type));             \
+		if(tmp){                                                              \
+			arr->data = tmp;                                                  \
+			arr->size = size;                                                 \
+			arr->capacity = size;                                             \
+			for(size_t i = 0; i < size; ++i){                                 \
+				arr->data[i] = item;                                          \
+			}                                                                 \
+			return true;                                                      \
+		}else{                                                                \
+			return false;                                                     \
+		}                                                                     \
+	}
+
+//bool typename_reserve(typename* arr, size_t new_capacity)                                                              
+#define ___RESERVE(type, typename)                                                                    \
+	if(arr->data == NULL){                                                                            \
+		new_capacity = newcapacity > ___MINIMUM_CAPACITY ? new_capacity : ___MINIMUM_CAPACITY;        \
+		arr->data = (type*)malloc(new_capacity * sizeof(type));                                       \
+		if(arr->data == NULL){                                                                        \
+			arr->capacity = new_capacity;                                                             \
+			return false;                                                                             \
+		}                                                                                             \
+	}                                                                                                 \
+	else if(newcapacity > arr->capacity){                                                             \
+		type* tmp = realloc(arr->data, newcapacity * sizeof(type));                                   \
+		if(tmp == NULL){                                                                              \
+			return false;                                                                             \
+		}                                                                                             \
+		arr->capacity = newcapacity;                                                                  \
+	}                                                                                                 \
+	return true;
+//assuming allocation doesn't fail garantees capacity will be atleast new capacity 
+//won't reduce the capacity if newcapacity < current capacity and capacity cannot be less than 8
+
 
 // bool typename_push(typename *arr, type item)
-#define ___PUSH(type, typename)                                             \
-		if(arr->size >= arr->capacity){                                     \
-			size_t capacity = arr->capacity ? arr->capacity * 2 : 8;        \
-			type* tmp = realloc(arr->data, capacity * sizeof(type));        \
-			if(tmp == NULL){                                                \
-				return false;                                               \
-			}                                                               \
-			arr->data = tmp;                                                \
-			arr->capacity = capacity;                                       \
-		}                                                                   \
-		arr->data[arr->size++] = item;                                      \
-		return true;
+#define ___PUSH(type, typename)                                           \
+	if(arr->size >= arr->capacity){                                       \
+		type* tmp;                                                        \
+		size_t capacity;                                                  \
+		if(arr->data == NULL){                                            \
+			tmp = malloc(___MINIMUM_CAPACITY * sizeof(type));             \
+			capacity = ___MINIMUM_CAPACITY;								  \
+		}else                                                             \
+			capacity = 2 * arr->capacity;                                 \
+			tmp = realloc(arr->data, capacity * sizeof(type));        	  \
+		if(tmp == NULL){                                                  \
+			return false;                                                 \
+		}                                                                 \
+		arr->data = tmp;                                                  \
+		arr->capacity = capacity;                                         \
+	}                                                                     \
+	arr->data[arr->size++] = item;                                        \
+	return true;
 
-// void push_unrestricted(typename *arr, type item)
-#define ___PUSH_UNRESTRICTED(type, typename)        \
-		arr->data[arr->size++] = item;              \
-		return;
+// void push_unrestricted(typename *arr, type item)        
+#define ___PUSH_UNRESTRICTED(type, typename)               \
+	arr->data[arr->size++] = item;
+// unrestricted push, to be used in hot paths along size reserve to side step the checks in regular push
 
 // type typename_pop(typename *arr, type item)
-#define ___POP(type, typename)												\
-		return arr->data[--arr->size];
+#define ___POP(type, typename)                \
+	return arr->data[--arr->size];
 // pops the last item off the array 
 
 // bool typename_recalculate_capacity(typename* arr)
-#define ___RECALCULATE_CAPACITY(type, typename)                                    \
-		type* tmp = (type*)realloc(arr->data, arr->capacity * sizeof(type));       \
-		if(tmp){                                                                   \
-			arr->data = tmp;                                                       \
-			arr->capacity = arr->size;                                             \
-			return true;                                                           \
-		}                                                                          \
-		return false;
+#define ___RECALCULATE_CAPACITY(type, typename)                             \
+	type* tmp = (type*)realloc(arr->data, arr->size * sizeof(type));        \
+	if(tmp){                                                                \
+		arr->data = tmp;                                                    \
+		arr->capacity = arr->size;                                          \
+		return true;                                                        \
+	}                                                                       \
+	return false;
 //returns array capacity to its current size
 
 
 // void typename_clear(*typename arr)
-#define ___CLEAR(type, typename)\
-		arr->size = 0;
+#define ___CLEAR(type, typename)        \
+	arr->size = 0;
 // clears the array but retains its capacity
 
 // void typename_reset(typename *type)
 #define ___RESET(type, typename)        \
-		arr->size = 0;                  \
-		arr->capacity = 0;              \
-		free(arr->data);                \
-		arr->data = NULL;
+	arr->size = 0;                      \
+	arr->capacity = 0;                  \
+	free(arr->data);                    \
+	arr->data = NULL;
 //fully resets the array frees data and sets size and capacity to 0
 
 // void typename_free(typename* arr)
 #define ___FREE(type, typename)		\
-		free(arr->data);
+	free(arr->data);
 //only frees data to be used when the array is being discarded
 
-//bool reserve(typename )
-#define ___RESERVE(type, typename)                                           \
-	if(arr->capacity == 0 && newcapacity > 0){                               \
-		arr->capacity = newcapacity;                                         \
-		arr->data = (type*)malloc(arr->capacity * sizeof(type));             \
-		if(arr->data == NULL){                                               \
-			return false;                                                    \
-		}                                                                    \
-	}                                                                        \
-                                                                             \
-	else if(newcapacity > arr->capacity){                                    \
-		arr->capacity = newcapacity;                                         \
-		type* tmp = realloc(arr->data, arr->capacity * sizeof(type));        \
-		if(tmp == NULL){                                                     \
-			return false;                                                    \
-		}                                                                    \
-	}                                                                        \
-	return true;
+
+
 	
+
 // bool typename_insert(typename* arr, size_t index, type item)
-#define ___INSERT(type, typename)                                                             \
-		if(arr->size == arr->capacity){                                                       \
-			size_t capacity = (arr->capacity ? arr->capacity*2 : 8);                          \
-			type* tmp = (type*)realloc(arr->data, capacity * sizeof(type));                   \
-			if(tmp == NULL){                                                                  \
-				return false;                                                                 \
-			}                                                                                 \
-			arr->data = tmp;                                                                  \
-			arr->capacity = capacity;                                                         \
-		}                                                                                     \
-		memmove(arr->data+index+1, arr->data+index, (arr->size-index) * sizeof(type));        \
-		arr->data[index] = item;                                                              \
-		arr->size++;                                                                          \
-		return true;
+#define ___INSERT(type, typename)                                                         \
+	if(arr->size == arr->capacity){                                                       \
+		type* tmp;                                                                        \
+		size_t capacity;                                                                  \
+		if(arr->data == NULL){                                                            \
+			tmp = malloc(___MINIMUM_CAPACITY * sizeof(type));                             \
+			capacity = ___MINIMUM_CAPACITY;                                               \
+		}else                                                                             \
+			capacity = 2*arr->capacity;                                                   \
+			tmp = realloc(arr->data, capacity * sizeof(type));                            \
+		if(tmp == NULL){                                                                  \
+			return false;                                                                 \
+		}                                                                                 \
+		arr->data = tmp;                                                                  \
+		arr->capacity = capacity;                                                         \
+	}                                                                                     \
+	memmove(arr->data+index+1, arr->data+index, (arr->size-index) * sizeof(type));        \
+	arr->data[index] = item;                                                              \
+	arr->size++;                                                                          \
+	return true;
 // inserts an intem into the array at the given index
 
 // bool typename_insert_c_array(typename* arr, size_t index, size_t buffer, type* c_arr)                              
