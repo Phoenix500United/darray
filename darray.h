@@ -7,21 +7,31 @@
 
 //README
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-// INTRO:  	 | This h file contains two macros, they generates a dynamic array and a set of functions to manage
+// INTRO:  	 | This h file contains 6 main macros, they generates a dynamic array and a set of functions to manage
 // 		  	 | the dynamic array of that type.
 //			 |
 // USE:	 	 | DYNAMIC_ARRAY(type, typename) type is the type of the elements of the array and typename is the name of the array
 //			 | eg DYNAMIC_ARRAY(char, string) produces a dynamic array of chars called string
 //			 |	
-// IMPORTANT:| DYNAMIC_ARRAY_MULTILEVEL(type, typename, free_function) is for custom data types that contain 
+// MULTILVL: | DYNAMIC_ARRAY_MULTILEVEL(type, typename, free_function) is for custom data types that contain 
 //			 | heap allocated data as to ensure no memory leaks. If using DYNAMIC_ARRAY_MULTILEVEL on a custom data you must 
 //           | provide a function into free_function which takes (A*) where A is the name of the custom data type which handles 
 //			 | freeing any data contained within for using a darray of adarray free_function would be darray_free where
 //			 | darray is the name of the array
-//			 |  
+//			 |
+// DECL/IMPL:| DYNAMIC_ARRAY_DECL(type, typename)/DYNAIMC_ARRAY_IMPL(type, typename) both regular and MULTILEVEL is 
+//			 | for portablility across large code bases by removing the requirement for everything to be static inline 
+//			 | DECL is to be used in a header and IMPL is to be used in a source file. They must both have the same typename 
+//			 | and type for a given array otheriwse it won't work.  
+//		     |
 // NOTE: 	 | There is no out of bounds indexing check on everything thats not erase due to returning false being reserved 
 //			 | for allocation error meaning it is up to the user to ensure their indexes are valid
+// 			 |
+// GROWTH:   | The minimum capacity of the array is 8 items and the convention of geometric growth chosen is 2x
+//           |   
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= 
+
+
 
 
 //List of functions
@@ -38,7 +48,7 @@
 //_array_append(*arr1, *arr2) appends arr2 and the end of arr1
 //_c_array_appent(*arr, *c_arr) appends c array on the end of arr1
 // MULTILEVEL
-//_deep_erase(*arr, index) same as regular erase execpts calls type_free() for each element to ensure no memory leakage
+//_deep_erase(*arr, index) same as regular erase execpts calls free_function() for each element to ensure no memory leakage
 //_deep_erase_range(*arr, rangestart, rangeend) same as deep_erase but over a range
 
 
@@ -66,7 +76,7 @@
 
 
 //typename typename_empty() (little confusing it returns typename and the function would be called typename_empty)
-#define _EMPTY(type, typename)        \
+#define ___EMPTY(type, typename)        \
 		typename arr;                 \
 		arr.data = NULL;              \
 		arr.size = 0;                 \
@@ -380,7 +390,7 @@
 
 #define DYNAMIC_ARRAY(type, typename)                                                                                                               \
 	___DECLARE_ARRAY(type, typename)                                                                                                                \
-	static inline typename typename##_empty(){_EMPTY(type, typename)}                                                                               \
+	static inline typename typename##_empty(){___EMPTY(type, typename)}                                                                               \
 	static inline bool typename##_init(typename *arr, size_t buffer, type* c_arr){___INIT(type, typename)}                                          \
 	static inline bool typename##_homogenous_init(typename *arr, size_t size,  type item){___HOMOGENOUS_INIT(type, typename)}                       \
 	static inline bool typename##_reinit(typename *arr, size_t buffer, type* c_arr){___REINIT(type, typename)}                                      \
@@ -411,7 +421,7 @@
 	static inline void typename##_clear(typename *arr){___CLEAR(type,typename)}                                            \
 	static inline void typename##_reset(typename *arr){___RESET(type, typename)}                                           \
 	static inline void typename##_free(typename *arr){___FREE(type, typename)}                                             \
-	static inline typename typename##_empty(){_EMPTY(type, typename)}                                                      \
+	static inline typename typename##_empty(){___EMPTY(type, typename)}                                                      \
 	static inline void typename##_push_unrestricted(typename *arr, type item){___PUSH_UNRESTRICTED(type, typename)}        \
 	static inline type typename##_pop(typename *arr){___POP(type,typename)}                                                \
 	/* SIGNATURES */                                                                                                       \
@@ -452,7 +462,7 @@
 
 #define DYNAMIC_ARRAY_MULTILEVEL(type, typename, free_function)                                                                                     \
 	___DECLARE_ARRAY(type, typename)                                                                                                                \
-	static inline typename typename##_empty(){_EMPTY(type, typename)}                                                                               \
+	static inline typename typename##_empty(){___EMPTY(type, typename)}                                                                               \
 	static inline bool typename##_init(typename *arr, size_t buffer, type* c_arr){___INIT(type, typename)}                                          \
 	static inline bool typename##_homogenous_init(typename *arr, size_t size,  type item){___HOMOGENOUS_INIT(type, typename)}                       \
 	static inline bool typename##_reinit(typename *arr, size_t buffer, type* c_arr){___REINIT(type, typename)}                                      \
@@ -482,7 +492,7 @@
 #define DYNAMIC_ARRAY_MULTILEVEL_DECL(type, typename, free_function)                                                       \
 	___DECLARE_ARRAY(type, typename)                                                                                       \
 	/* HEADER DEFINED INLINE FUNCTIONS */                                                                                  \
-	static inline typename typename##_empty(){_EMPTY(type, typename)}                                                      \
+	static inline typename typename##_empty(){___EMPTY(type, typename)}                                                      \
 	static inline void typename##_push_unrestricted(typename *arr, type item){___PUSH_UNRESTRICTED(type, typename)}        \
 	static inline type typename##_pop(typename *arr){___POP(type,typename)}                                                \
 	/* SIGNATURES */                                                                                                       \
