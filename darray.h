@@ -31,9 +31,6 @@
 //           |   
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= 
 
-
-
-
 //List of functions
 //_init(*arr, size, *c_arr) Initilizes the array if passed a NULL ptr in the c_arr argument it will initilize to size 0, capacity 0
 //_push(*arr, value) Pushes a item onto the end of the array 
@@ -50,9 +47,6 @@
 // MULTILEVEL
 //_deep_erase(*arr, index) same as regular erase execpts calls free_function() for each element to ensure no memory leakage
 //_deep_erase_range(*arr, rangestart, rangeend) same as deep_erase but over a range
-
-
-
 
 /*
 	This section of macros are the actual implementation of the logic in the functions of the main macros. 
