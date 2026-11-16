@@ -434,7 +434,7 @@
 	bool typename##_erase(typename *arr, size_t index);                                                                    \
 	bool typename##_erase_range(typename *arr, size_t rangestart, size_t rangeend);
 
-#define DYNAMIC_ARRAY_IMPL                                                                                                            \
+#define DYNAMIC_ARRAY_IMPL(type, typename)                                                                                                            \
 	bool typename##_init(typename *arr, size_t buffer, type* c_arr){___INIT(type, typename)}                                          \
 	bool typename##_homogenous_init(typename *arr, size_t size,  type item){___HOMOGENOUS_INIT(type, typename)}                       \
 	bool typename##_reinit(typename *arr, size_t buffer, type* c_arr){___REINIT(type, typename)}                                      \
