@@ -38,7 +38,7 @@
 //_recalculate_capacity(*arr) resizes teh capacity to match the size
 //_clear(*arr) resizes the array back to 0
 //_reset(*arr) resizes and frees data
-//_reserve(*arr, newcapacity) reserves more uninitilized memory
+//_reserve(*arr, new_capacity) reserves more uninitilized memory
 //_insert(*arr, value, index) inserts value at index
 //_erase(*arr, index) removes the item at index
 //_erase_range(*arr, rangestart, rangeend) erases range beteen rangestart and rangeend
@@ -85,7 +85,7 @@
 			arr->capacity = 0;                                                          \
 			arr->size = 0;                                                              \
 		}else{                                                                          \
-			buffer = buffer > ___MINIMUM_CAPACITY ? buffer : ___MINIMUM_CAPACITY        \
+			buffer = buffer > ___MINIMUM_CAPACITY ? buffer : ___MINIMUM_CAPACITY;        \
 			arr->data = (type*)malloc(buffer * sizeof(type));                           \
 			if(arr->data){                                                              \
 				memcpy(arr->data, c_arr, buffer * sizeof(type));                        \
@@ -141,7 +141,7 @@
 	if(arr->data == NULL){                                                    \
 		___HOMOGENOUS_INIT(type,typename)                                     \
 	}else{                                                                    \
-		size = size > ___MINIMUM_CAPACITY ? size : ___MINIMUM_CAPACITY        \
+		size = size > ___MINIMUM_CAPACITY ? size : ___MINIMUM_CAPACITY;        \
 		type* tmp = (type*)realloc(arr->data, size*sizeof(type));             \
 		if(tmp){                                                              \
 			arr->data = tmp;                                                  \
@@ -159,23 +159,23 @@
 //bool typename_reserve(typename* arr, size_t new_capacity)                                                              
 #define ___RESERVE(type, typename)                                                                    \
 	if(arr->data == NULL){                                                                            \
-		new_capacity = newcapacity > ___MINIMUM_CAPACITY ? new_capacity : ___MINIMUM_CAPACITY;        \
+		new_capacity = new_capacity > ___MINIMUM_CAPACITY ? new_capacity : ___MINIMUM_CAPACITY;        \
 		arr->data = (type*)malloc(new_capacity * sizeof(type));                                       \
 		if(arr->data == NULL){                                                                        \
 			arr->capacity = new_capacity;                                                             \
 			return false;                                                                             \
 		}                                                                                             \
 	}                                                                                                 \
-	else if(newcapacity > arr->capacity){                                                             \
-		type* tmp = realloc(arr->data, newcapacity * sizeof(type));                                   \
+	else if(new_capacity > arr->capacity){                                                             \
+		type* tmp = realloc(arr->data, new_capacity * sizeof(type));                                   \
 		if(tmp == NULL){                                                                              \
 			return false;                                                                             \
 		}                                                                                             \
-		arr->capacity = newcapacity;                                                                  \
+		arr->capacity = new_capacity;                                                                  \
 	}                                                                                                 \
 	return true;
 //assuming allocation doesn't fail garantees capacity will be atleast new capacity 
-//won't reduce the capacity if newcapacity < current capacity and capacity cannot be less than 8
+//won't reduce the capacity if new_capacity < current capacity and capacity cannot be less than 8
 
 
 // bool typename_push(typename *arr, type item)
@@ -396,7 +396,7 @@
 	static inline void typename##_clear(typename *arr){___CLEAR(type,typename)}                                                                     \
 	static inline void typename##_reset(typename *arr){___RESET(type, typename)}                                                                    \
 	static inline void typename##_free(typename *arr){___FREE(type, typename)}                                                                      \
-	static inline bool typename##_reserve(typename *arr, size_t newcapacity){___RESERVE(type, typename)}                                            \
+	static inline bool typename##_reserve(typename *arr, size_t new_capacity){___RESERVE(type, typename)}                                            \
 	static inline bool typename##_insert(typename *arr, size_t index, type item){___INSERT(type,typename)}                                          \
 	static inline bool typename##_insert_c_array(typename* arr, size_t index, size_t buffer, type* c_arr){___INSERT_C_ARRAY(type, typename)}        \
 	static inline bool typename##_insert_array(typename* arr, size_t index, typename* arr2){___INSERT_ARRAY(type, typename)}                        \
@@ -425,7 +425,7 @@
 	bool typename##_homogenous_reinit(typename *arr, size_t size,  type item);                                             \
 	bool typename##_push(typename *arr, type item);                                                                        \
 	bool typename##_recalculate_capacity(typename *arr);                                                                   \
-	bool typename##_reserve(typename *arr, size_t newcapacity);                                                            \
+	bool typename##_reserve(typename *arr, size_t new_capacity);                                                            \
 	bool typename##_insert(typename *arr, size_t index, type item);                                                        \
 	bool typename##_insert_c_array(typename* arr, size_t index, size_t buffer, type* c_arr);                               \
 	bool typename##_insert_array(typename* arr, size_t index, typename* arr2);                                             \
@@ -441,7 +441,7 @@
 	bool typename##_homogenous_reinit(typename *arr, size_t size,  type item){___HOMOGENOUS_REINIT(type, typename)}                   \
 	bool typename##_push(typename *arr, type item){___PUSH(type, typename)}                                                           \
 	bool typename##_recalculate_capacity(typename *arr){___RECALCULATE_CAPACITY(type,typename)}                                       \
-	bool typename##_reserve(typename *arr, size_t newcapacity){___RESERVE(type, typename)}                                            \
+	bool typename##_reserve(typename *arr, size_t new_capacity){___RESERVE(type, typename)}                                            \
 	bool typename##_insert(typename *arr, size_t index, type item){___INSERT(type,typename)}                                          \
 	bool typename##_insert_c_array(typename* arr, size_t index, size_t buffer, type* c_arr){___INSERT_C_ARRAY(type, typename)}        \
 	bool typename##_insert_array(typename* arr, size_t index, typename* arr2){___INSERT_ARRAY(type, typename)}                        \
@@ -468,7 +468,7 @@
 	static inline void typename##_clear(typename *arr){___MLCLEAR(type,typename, free_function)}                                                    \
 	static inline void typename##_reset(typename *arr){___MLRESET(type, typename, free_function)}                                                   \
 	static inline void typename##_free(typename *arr){___MLFREE(type, typename, free_function)}                                                     \
-	static inline bool typename##_reserve(typename *arr, size_t newcapacity){___RESERVE(type, typename)}                                            \
+	static inline bool typename##_reserve(typename *arr, size_t new_capacity){___RESERVE(type, typename)}                                            \
 	static inline bool typename##_insert(typename *arr, size_t index, type item){___INSERT(type,typename)}                                          \
 	static inline bool typename##_insert_c_array(typename* arr, size_t index, size_t buffer, type* c_arr){___INSERT_C_ARRAY(type, typename)}        \
 	static inline bool typename##_insert_array(typename* arr, size_t index, typename* arr2){___INSERT_ARRAY(type, typename)}                        \
@@ -499,7 +499,7 @@
 	bool typename##_homogenous_reinit(typename *arr, size_t size,  type item);                                             \
 	bool typename##_push(typename *arr, type item);                                                                        \
 	bool typename##_recalculate_capacity(typename *arr);                                                                   \
-	bool typename##_reserve(typename *arr, size_t newcapacity);                                                            \
+	bool typename##_reserve(typename *arr, size_t new_capacity);                                                            \
 	bool typename##_insert(typename *arr, size_t index, type item);                                                        \
 	bool typename##_insert_c_array(typename* arr, size_t index, size_t buffer, type* c_arr);                               \
 	bool typename##_insert_array(typename* arr, size_t index, typename* arr2);                                             \
@@ -520,7 +520,7 @@
     void typename##_clear(typename *arr){___MLCLEAR(type,typename, free_function)}                                                    \
     void typename##_reset(typename *arr){___MLRESET(type, typename, free_function)}                                                   \
     void typename##_free(typename *arr){___MLFREE(type, typename, free_function)}                                                     \
-    bool typename##_reserve(typename *arr, size_t newcapacity){___RESERVE(type, typename)}                                            \
+    bool typename##_reserve(typename *arr, size_t new_capacity){___RESERVE(type, typename)}                                            \
     bool typename##_insert(typename *arr, size_t index, type item){___INSERT(type,typename)}                                          \
     bool typename##_insert_c_array(typename* arr, size_t index, size_t buffer, type* c_arr){___INSERT_C_ARRAY(type, typename)}        \
     bool typename##_insert_array(typename* arr, size_t index, typename* arr2){___INSERT_ARRAY(type, typename)}                        \

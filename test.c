@@ -1,7 +1,11 @@
+#include <stdio.h>
 #include "darray.h"
 
-DYNAMIC_ARRAY_DECL(int, int_array)
-DYNAMIC_ARRAY_IMPL(int, int_array)
+DYNAMIC_ARRAY(int, normal_int_array)
+DYNAMIC_ARRAY_DECL(int, split_int_array);
+DYNAMIC_ARRAY_IMPL(int, split_int_array);
+
+
 
 int main(){
     printf(\
